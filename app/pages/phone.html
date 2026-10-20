@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Clipboard">
+<title>Phone Clipboard</title>
+<link rel="apple-touch-icon" href="/static/icon.png">
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/phone.js" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <img src="/static/icon.png" alt="">
+    <div>
+      <h1>Phone Clipboard</h1>
+      <div class="muted" id="state">Connecting to your computer...</div>
+    </div>
+  </header>
+
+  <div class="warning" id="problem" hidden></div>
+
+  <div id="app" hidden>
+    <section class="card">
+      <h2>From your computer</h2>
+      <textarea id="from-pc" readonly aria-label="Text from your computer" placeholder="Copy some text on your computer, then tap Refresh."></textarea>
+      <div class="row">
+        <button id="copy" type="button">Copy to iPhone</button>
+        <button class="secondary" id="refresh" type="button">Refresh</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>To your computer</h2>
+      <textarea id="to-pc" aria-label="Text to send to your computer" placeholder="Tap here, then tap Paste (or type)."></textarea>
+      <div class="row">
+        <button id="send" type="button">Send to computer</button>
+        <button class="secondary" id="clear" type="button">Clear</button>
+      </div>
+    </section>
+
+    <section class="card" id="setup">
+      <h2>One-tap set-up</h2>
+      <p>With two shortcuts, one tap (or a double-tap on the back of your iPhone) moves the text, without opening this page. You do this once. It takes about five minutes.</p>
+      <p><b>The address for both shortcuts:</b></p>
+      <div class="linkbox">
+        <input class="link" id="shortcut-link" readonly aria-label="Address for the shortcuts">
+        <button id="copy-link" type="button">Copy</button>
+      </div>
+      <p class="muted" id="link-note">Checking the best address...</p>
+
+      <details>
+        <summary>Shortcut 1: Get from PC</summary>
+        <ol class="steps">
+          <li>Tap <b>Copy</b> next to the address above.</li>
+          <li>Open the <b>Shortcuts</b> app. Tap <b>+</b> (top right).</li>
+          <li>Tap <b>Search Actions</b>, type <code>Get Contents of URL</code> and tap it.</li>
+          <li>Tap the word <b>URL</b> in that step, then tap it again and choose <b>Paste</b>. Tap <b>Done</b> on the keyboard.</li>
+          <li>Search again: type <code>Copy to Clipboard</code> and tap it.</li>
+          <li>Search again: type <code>Show Notification</code> and tap it. Tap its text (<b>Hello World!</b>), delete it, and type <code>Copied from PC</code>.</li>
+          <li>Tap the name at the top (with the small arrow), choose <b>Rename</b>, and type <code>Get from PC</code>. Tap <b>Done</b>.</li>
+          <li>Try it: copy some text on the computer, then tap <b>Get from PC</b> in Shortcuts. The first time, the iPhone asks to connect to your computer: tap <b>Allow</b> (or <b>Always Allow</b>).</li>
+        </ol>
+      </details>
+
+      <details>
+        <summary>Shortcut 2: Send to PC</summary>
+        <ol class="steps">
+          <li>In Shortcuts, tap <b>+</b>.</li>
+          <li>Tap <b>Search Actions</b>, type <code>Get Clipboard</code> and tap it.</li>
+          <li>Search again: type <code>Get Contents of URL</code> and tap it. Tap <b>URL</b> and paste the same address as before (tap <b>Copy</b> above again if needed).</li>
+          <li>Tap the small arrow at the right of that step to show more options. Tap <b>Method</b> and choose <b>POST</b>.</li>
+          <li>Tap <b>Request Body</b> and choose <b>JSON</b>. Tap <b>Add new field</b> and choose <b>Text</b>. In <b>Key</b>, type <code>text</code>. Then tap the box next to it (<b>Text</b>) and tap <b>Clipboard</b> in the bar above the keyboard.</li>
+          <li>Search again: type <code>Show Notification</code> and tap it. Tap its text, delete it, and tap <b>Contents of URL</b> in the bar above the keyboard. (This shows the computer's answer, like "Sent to your computer".)</li>
+          <li>Tap the name at the top, choose <b>Rename</b>, and type <code>Send to PC</code>. Tap <b>Done</b>.</li>
+          <li>Try it: copy some text on the iPhone, tap <b>Send to PC</b>, then press <kbd>Ctrl</kbd>+<kbd>V</kbd> on the computer. If the iPhone asks about pasting or connecting, choose <b>Allow</b> (or <b>Always Allow</b>).</li>
+        </ol>
+        <p class="muted">So the iPhone stops asking before every paste: <b>Settings</b>, <b>Apps</b>, <b>Shortcuts</b>, <b>Paste from Other Apps</b>, <b>Allow</b>.</p>
+      </details>
+
+      <details>
+        <summary>One tap: double-tap the back of the iPhone</summary>
+        <ol class="steps">
+          <li>Open <b>Settings</b>, <b>Accessibility</b>, <b>Touch</b>, and at the bottom <b>Back Tap</b>.</li>
+          <li>Tap <b>Double Tap</b>, scroll down to <b>Shortcuts</b>, and choose <b>Get from PC</b>.</li>
+          <li>Go back, tap <b>Triple Tap</b>, and choose <b>Send to PC</b>.</li>
+        </ol>
+        <p>Now: double-tap the back of the iPhone to get the computer's text, triple-tap to send yours.</p>
+        <p class="muted">Other ways to run them: the Action button (iPhone 15 Pro and newer: Settings, Action Button, Shortcut), a button in Control Center, an icon on the Home Screen, or Siri ("Send to PC").</p>
+      </details>
+
+      <details>
+        <summary>If a shortcut doesn't work</summary>
+        <ul class="steps">
+          <li><b>It can't connect, or takes a long time:</b> check that the iPhone is on the same Wi-Fi as the computer, and that the computer is on and awake. Phone Clipboard only works on your own network, not over mobile data.</li>
+          <li>Check <b>Settings</b>, <b>Privacy &amp; Security</b>, <b>Local Network</b>: <b>Shortcuts</b> must be on.</li>
+          <li><b>It says the key is old:</b> a new key was made on the computer. Scan the code on the computer again, copy the new address here, and paste it into both shortcuts (in place of the old one).</li>
+          <li><b>It worked before and stopped:</b> the computer's address may have changed. Scan the code on the computer again and compare the address. If it's different, put the new one into both shortcuts.</li>
+          <li>On the computer, the Phone Clipboard page (Start menu: <b>Phone Clipboard</b>) shows what's wrong, if anything.</li>
+        </ul>
+      </details>
+    </section>
+
+    <section class="card">
+      <h2>This page as an app</h2>
+      <p>To open this page with one tap: in Safari, tap the <b>Share</b> button (the square with the arrow), then <b>Add to Home Screen</b>.</p>
+    </section>
+  </div>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phone Clipboard</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/pc.js" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <img src="/static/icon.png" alt="">
+    <div>
+      <h1>Phone Clipboard</h1>
+      <div class="muted" id="state">Checking...</div>
+    </div>
+  </header>
+
+  <div id="warnings"></div>
+
+  <section class="card">
+    <h2>Set up your iPhone (once)</h2>
+    <div class="setup">
+      <img id="qr" class="qr" alt="QR code to scan with your iPhone's Camera">
+      <div>
+        <ol class="steps">
+          <li>Connect your iPhone to the <b>same Wi-Fi</b> as this computer.</li>
+          <li>Open the <b>Camera</b> on the iPhone and point it at this code. Tap the link that appears under it.</li>
+          <li>A page called <b>Phone Clipboard</b> opens on the iPhone. Follow <b>One-tap set-up</b> there to make the two shortcuts.</li>
+        </ol>
+        <p class="muted" id="address-choice" hidden>
+          <label for="host">The code uses this address. If the iPhone can't connect, try another:</label>
+          <select id="host"></select>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Every day</h2>
+    <p><b>Computer to iPhone:</b> copy text here as usual (<kbd>Ctrl</kbd>+<kbd>C</kbd>). On the iPhone, run <b>Get from PC</b> (or double-tap the back of the iPhone, if you set that up). Then paste on the iPhone.</p>
+    <p><b>iPhone to computer:</b> copy text on the iPhone. Run <b>Send to PC</b> (or triple-tap the back). Then paste here with <kbd>Ctrl</kbd>+<kbd>V</kbd>.</p>
+    <p class="muted" id="last-phone"></p>
+    <p class="muted" id="last-refused" hidden></p>
+  </section>
+
+  <section class="card">
+    <h2>Texts from your iPhone</h2>
+    <p class="muted">The last 10, kept until Phone Clipboard stops. Handy if you copied something else on the computer in between.</p>
+    <ul class="recent" id="recent"></ul>
+  </section>
+
+  <section class="card">
+    <h2>Settings</h2>
+    <p>Phone Clipboard starts by itself when you sign in to Windows and works quietly in the background. Open this page again any time: click <b>Start</b>, type <b>Phone Clipboard</b>, press <kbd>Enter</kbd>.</p>
+    <div class="row">
+      <button class="secondary" id="check" type="button">Check again</button>
+      <button class="secondary" id="new-key" type="button">Make a new key</button>
+      <button class="secondary" id="stop" type="button">Stop Phone Clipboard</button>
+    </div>
+    <p class="muted gap">Make a new key if someone else got your iPhone's link. Old links and shortcuts stop working, so set up the iPhone again with the new code.</p>
+  </section>
+
+  <p class="muted" id="version"></p>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

@@ -1,0 +1,6 @@
+# Windows scripts keep their Windows line endings (CR LF) exactly as stored: cmd.exe misreads
+# labels and jumps in .bat files that have Unix line endings.
+*.bat -text
+*.ps1 -text
+*.ico binary
+*.png binary

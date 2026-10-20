@@ -1,0 +1,7 @@
+# This computer's own: settings (with the key), the log, and Phone Clipboard's copy of Python
+data/
+.python/
+
+# Python caches
+__pycache__/
+*.pyc
