@@ -1,6 +1,6 @@
 # Plan: from Phone Clipboard to an App Store app
 
-Status: draft, October 2026. The decisions at the end are open until Michael answers them.
+Status: agreed, October 21, 2026 (decisions in section 7). The name is being checked.
 
 Goal: a free iPhone app with a $4.99 lifetime upgrade, plus a free Windows companion in the
 Microsoft Store, that moves text, pictures and files between an iPhone and a Windows PC
@@ -178,13 +178,25 @@ built with Xcode 26 or later as the App Store requires):
 
 ---
 
-## 7. Decisions needed from Michael
+## 7. Decisions (October 21, 2026)
 
-1. **Name.** "Phone Clipboard" is too generic for the App Store. App names can't use
-   "iPhone" or Apple's feature names (like AirDrop or Handoff). Ideas to check for
-   availability: PasteBridge, ClipCourier, Wavepaste.
-2. **Ads or not** (recommendation above: no ads, $4.99 Pro).
-3. **The free/Pro split** in section 3.
-4. **Windows app rewritten in C#** (recommended) or the Python prototype packaged.
-5. **iOS 18 or later** as the minimum.
-6. **Later: the small server** for PC-to-iPhone notifications (yes/no/decide after launch).
+1. **Name:** PasteBridge, if it's free. Being checked: App Store, Microsoft Store,
+   trademarks, domains. The final check is reserving the name in App Store Connect.
+2. **No ads.**
+3. **Free and Pro** as in section 3: free has text and pictures both ways, one PC, all the
+   one-tap actions; Pro ($4.99 once) adds files and folders, several PCs and history kept
+   forever.
+4. **Windows app rewritten in C#** (.NET 10), packaged as MSIX for the Microsoft Store.
+5. **iOS 18 or later.**
+6. Open for later: the small server for PC-to-iPhone notifications.
+
+## 8. Order of work
+
+1. `docs/PROTOCOL.md`: how the two apps talk (this session).
+2. The Windows app's core (protocol, pairing, storage, the server), with tests that run
+   anywhere (this session).
+3. The Windows app itself: tray, clipboard, discovery, notifications, MSIX package. Written
+   here; built and tested on Michael's PC.
+4. The iPhone app, in the Claude Code session on Michael's Mac, against the Windows core.
+5. TestFlight on Michael's iPhone, then App Store and Microsoft Store paperwork and
+   submission.
