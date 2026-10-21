@@ -150,5 +150,18 @@ kbd, code {
 }
 .toast.show { opacity: 1; }
 .gap { margin-top: 10px; }
+figure.picture { margin: 0; }
+figure.picture img {
+  display: block;
+  max-width: 100%;
+  max-height: 60vh;
+  margin: 0 auto 6px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  -webkit-touch-callout: default;  /* keep Copy and Save to Photos on touch and hold */
+}
+.recent .thumb { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); flex: none; }
+.recent .actions { display: flex; flex-direction: column; gap: 6px; flex: none; }
 .offscreen { position: fixed; top: 0; left: -9999px; opacity: 0; font-size: 16px; }
 [hidden] { display: none !important; }

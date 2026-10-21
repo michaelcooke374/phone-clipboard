@@ -1,0 +1,9 @@
+# Pillow, the picture library Phone Clipboard uses for pictures (MIT-CMU license).
+# setup.bat installs exactly this version into the .packages folder, and only a file
+# matching one of these fingerprints (Windows, Python 3.12: 64-bit, ARM, 32-bit).
+# 13.0.0: the first version without the known problems in 12.x (checked with pip-audit,
+# October 2026).
+pillow==13.0.0 \
+    --hash=sha256:ff3fe9eb621fbb9db4c4be33ab946f6bac5f98ab50ca8d3260503653656c961b \
+    --hash=sha256:c3bc8ee0271387e0b1e3ad0ff893645990a656e79bf9c42f4f734a3642b11d51 \
+    --hash=sha256:02464da86f561f410e13b061ec37c3068a9cb557a095494157742d07b3c24a27

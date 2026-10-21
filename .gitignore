@@ -1,6 +1,8 @@
-# This computer's own: settings (with the key), the log, and Phone Clipboard's copy of Python
+# This computer's own: settings (with the key), the log, Phone Clipboard's copy of Python,
+# and Pillow (installed by setup.bat)
 data/
 .python/
+.packages/
 
 # Python caches
 __pycache__/

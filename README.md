@@ -1,14 +1,17 @@
 # Phone Clipboard
 
-Copy text on your Windows computer and paste it on your iPhone, and the other way round.
-It works over your own Wi-Fi: nothing goes through the internet or anyone's servers.
+Copy text or pictures on your Windows computer and paste them on your iPhone, and the other
+way round. It works over your own Wi-Fi: nothing goes through the internet or anyone's
+servers.
 
 * **Computer to iPhone:** copy as usual (`Ctrl`+`C`), double-tap the back of the iPhone, paste.
+  Works for text and pictures.
 * **iPhone to computer:** copy on the iPhone, triple-tap the back of the iPhone, press `Ctrl`+`V`.
+  For a picture: in Photos, tap **Share**, then **Send picture to PC**.
 
 Windows and iOS don't do this by themselves: Apple's own copy and paste between devices
 only works between Apple devices. Phone Clipboard fills the gap with a small program on the
-computer and two shortcuts on the iPhone.
+computer and three shortcuts on the iPhone.
 
 ---
 
@@ -74,13 +77,15 @@ in the background. To see its page again: click **Start**, type **Phone Clipboar
    Clipboard page. Tap the link that appears under it.
 3. Safari opens a page called **Phone Clipboard** that says "Connected to your computer".
 
-You can already use this page: **Copy to iPhone** copies the computer's text, and
-**Send to computer** sends what you paste into the box. The shortcuts below make it one tap.
+You can already use this page: **Copy to iPhone** copies the computer's text (a picture
+shows on the page: touch and hold it, then tap **Copy** or **Save to Photos**).
+**Send to computer** sends what you paste into the box, and **Send pictures...** sends
+pictures from your photo library. The shortcuts below make it one tap.
 
 ### The address for the shortcuts
 
 On the iPhone page, under **One-tap set-up**, there's an address starting with `http://`.
-Both shortcuts use it. Tap **Copy** next to it before each shortcut below.
+All the shortcuts use it. Tap **Copy** next to it before each shortcut below.
 
 The same steps are on the iPhone page itself (tap a heading to open it), so you can follow
 them there.
@@ -100,6 +105,9 @@ them there.
 8. Try it: copy some text on the computer, then tap **Get from PC** in Shortcuts. The first
    time, the iPhone asks whether it may connect to your computer: tap **Allow** (or
    **Always Allow**).
+
+It brings pictures too: copy a picture on the computer (or a picture file in File
+Explorer), run **Get from PC**, and paste the picture on the iPhone.
 
 ### Shortcut 2: Send to PC
 
@@ -123,6 +131,29 @@ them there.
 So the iPhone stops asking before every paste: open **Settings**, **Apps**, **Shortcuts**,
 **Paste from Other Apps**, and choose **Allow**.
 
+### Shortcut 3: Send picture to PC
+
+1. In Shortcuts, tap **+**.
+2. Tap the name at the top (with the small arrow), choose **Rename**, and type
+   `Send picture to PC`.
+3. Tap the name again, choose **Details**, turn on **Show in Share Sheet**, and tap
+   **Done**. A first step appears: **Receive Any input from Share Sheet**.
+4. In that step, tap **Any**, choose only **Images**, and tap **Done**. Then tap
+   **Continue** (after "If there's no input") and choose **Get Clipboard**.
+5. Search for `Convert Image` and tap it. If its format isn't **JPEG**, tap the format and
+   choose **JPEG**. (iPhone photos are in a format, HEIC, that Windows can't paste.)
+6. Search for `Get Contents of URL` and tap it. Tap **URL** and paste the same address.
+7. Tap the small arrow at the right of that step. Set **Method** to **POST**. Tap
+   **Request Body** and choose **File**. Tap **File** (the blue word) and choose
+   **Converted Image**.
+8. Search for `Show Notification` and tap it. Tap its text, delete it, and tap
+   **Contents of URL** in the bar above the keyboard. Tap **Done**.
+9. Try it: in Photos, open a photo, tap **Share**, and choose **Send picture to PC** (scroll
+   down the list if needed). Then press `Ctrl`+`V` on the computer.
+
+It also sends a picture you copied on the iPhone: copy it, then run **Send picture to PC**.
+One picture at a time; to send several at once, use **Send pictures...** on the iPhone page.
+
 ### One tap: the back of the iPhone
 
 1. Open **Settings**, **Accessibility**, **Touch**, and at the bottom **Back Tap**.
@@ -142,11 +173,13 @@ your iPhone, look for the closest match.
 
 | To do this | Do this |
 | --- | --- |
-| Copy from the computer to the iPhone | Copy on the computer (`Ctrl`+`C`). **Double-tap** the back of the iPhone (or run **Get from PC**). A notification says "Copied from PC". Paste on the iPhone. |
-| Copy from the iPhone to the computer | Copy on the iPhone. **Triple-tap** the back of the iPhone (or run **Send to PC**). A notification says "Sent to your computer". Press `Ctrl`+`V` on the computer. |
-| Find a text the iPhone sent earlier | On the computer, open Phone Clipboard (Start menu). **Texts from your iPhone** has the last 10, with a **Copy** button. |
+| Copy text or a picture from the computer to the iPhone | Copy on the computer (`Ctrl`+`C`; for a picture: right-click it and choose **Copy**, take a screenshot, or copy a picture file in File Explorer). **Double-tap** the back of the iPhone (or run **Get from PC**). A notification says "Copied from PC". Paste on the iPhone. |
+| Copy text from the iPhone to the computer | Copy on the iPhone. **Triple-tap** the back of the iPhone (or run **Send to PC**). A notification says "Sent to your computer". Press `Ctrl`+`V` on the computer. |
+| Send a photo from the iPhone to the computer | In Photos, open it, tap **Share**, choose **Send picture to PC**. Press `Ctrl`+`V` on the computer (in a document, an email, a chat, or a folder in File Explorer). |
+| Send several photos at once | On the iPhone page (Phone Clipboard on your Home Screen), tap **Send pictures...** and choose them. They all land in **Pictures > Phone Clipboard** on the computer; the last one is ready to paste. |
+| Find something the iPhone sent earlier | On the computer, open Phone Clipboard (Start menu). **From your iPhone** lists the last 10 texts and pictures, with a **Copy** button. Pictures stay in **Pictures > Phone Clipboard**. |
 
-Text only: pictures and files aren't sent. Emoji and any language work.
+Emoji and any language work. Videos and other files aren't sent.
 
 ---
 
@@ -167,26 +200,30 @@ box at the top says what and how to fix it.
 | It **worked before and stopped** | The computer's address may have changed (after a router restart, for example). Scan the code on the computer again and compare the address on the iPhone page with the one in your shortcuts. If it's different, put the new one into both shortcuts. (When the iPhone page can reach the computer by its name, the address uses the name and doesn't change.) |
 | The iPhone page says **"Not Secure"** or shows a warning page | The page is on your own network, not the internet. Tap **Visit Website** (or similar). The warning only appears if **Not Secure Connection Warning** is turned on in **Settings**, **Apps**, **Safari**. |
 | The iPhone asks for permission before every paste | **Settings**, **Apps**, **Shortcuts**, **Paste from Other Apps**, **Allow**. |
-| "Your computer's clipboard has no text" | The computer's clipboard holds a picture or a file, or nothing. Copy some text on the computer first. |
+| "Your computer's clipboard has no text or picture" | The computer's clipboard holds something else (like a file that isn't a picture), or nothing. Copy some text or a picture first. |
+| A message says **pictures need one more step** | On the computer, double-click **setup.bat** in the Phone Clipboard folder. It adds the part that handles pictures (about 7 MB, once). |
+| A message says the photo is in **HEIC** format | In the **Send picture to PC** shortcut, add **Convert Image** (to JPEG) before **Get Contents of URL** (step 5 of Shortcut 3). |
+| A picture won't paste into a program on the computer | Some programs only take files: open Phone Clipboard's page and click **Open the pictures folder**, or paste in File Explorer instead. |
 | A message says **another program is using port 8799** | Close programs you started recently and try again. If it keeps happening: open `data\settings.json` in the Phone Clipboard folder with Notepad, change `8799` to `18799`, save, double-click **setup.bat**, and put the new address into both shortcuts. |
 | The computer page says **Phone Clipboard isn't running** | Click **Start**, type **Phone Clipboard**, press **Enter**. If that doesn't help, double-click **setup.bat**. |
 
 Phone Clipboard keeps a diary in `data\log.txt`: when it started, and when the iPhone
-connected (how many letters, never the texts themselves).
+connected (how many letters or how big a picture, never the texts or pictures themselves).
 
 ---
 
 ## 6. Updating and removing
 
 **To update:** download the zip again (step 2 above), extract it to `C:\` again and choose
-**Replace the files in the destination**. Then double-click **setup.bat**. Your key and
-settings are kept (they're in the `data` folder, which isn't in the zip), so the iPhone
-shortcuts keep working.
+**Replace the files in the destination**. Then double-click **setup.bat** (it restarts
+Phone Clipboard with the new version, and adds anything new it needs, like the part that
+handles pictures). Your key and settings are kept (they're in the `data` folder, which isn't
+in the zip), so the iPhone shortcuts keep working.
 
 **To remove:** double-click **uninstall.bat** and click **Yes** when Windows asks. It stops
 Phone Clipboard and removes its firewall rule, Start menu entry and automatic start. Then
-delete the folder. On the iPhone, delete the two shortcuts (and turn off Back Tap if you set
-it).
+delete the folder. On the iPhone, delete the shortcuts (and turn off Back Tap if you set it).
+Pictures the iPhone sent stay in **Pictures > Phone Clipboard** until you delete them.
 
 ---
 
@@ -205,6 +242,10 @@ it).
   send passwords that way there.
 * **Texts aren't stored.** They're never written to the disk or the log. The last 10 texts
   from the iPhone are kept in memory for the computer's page, until Phone Clipboard stops.
+* **Pictures are kept.** Pictures from the iPhone are saved in **Pictures > Phone Clipboard**
+  on the computer (many programs can only paste a picture from a file). Delete them there
+  when you no longer need them. If your Pictures folder is backed up to OneDrive, they're
+  backed up too.
 
 ---
 
@@ -212,29 +253,48 @@ it).
 
 ### How it works
 
-* `app/phone_clipboard.py` is a small web server (Python standard library only, no add-ons)
-  that listens on port 8799 on every network of the computer (IPv4 and IPv6). It runs with
-  `pythonw.exe`, so there's no window.
-  * `GET /c/<key>` returns the computer's clipboard text (`text/plain`, LF line endings;
-    404 with an explanation when there's no text). `?json=1` returns
-    `{"ok", "text", "has_text"}`.
+* `app/phone_clipboard.py` is a small web server (Python standard library, plus Pillow for
+  pictures) that listens on port 8799 on every network of the computer (IPv4 and IPv6). It
+  runs with `pythonw.exe`, so there's no window.
+  * `GET /c/<key>` returns the computer's clipboard: its text (`text/plain`, LF line
+    endings), or else its picture: a copied picture as `image/png`, or a copied picture file
+    as it is (`image/jpeg`, `image/heic`...). 404 with an explanation when there's neither.
+    `?json=1` returns `{"ok", "kind": "text" | "picture" | "none", "text", "has_text"}` (plus
+    `"type"` and `"bytes"` for a picture); `?picture=1` returns only a picture. A copied
+    picture is turned into PNG once per copy (by the clipboard's sequence number).
   * `POST /c/<key>` puts text on the computer's clipboard (CR LF line endings). The body can
     be JSON (`{"text": ...}`; any capitalisation of `text`, or the only text field), a form
-    field `text` (urlencoded or multipart), or plain text. Up to 2 MB. It answers with a
-    sentence for the shortcut's notification (`?json=1`: `{"ok", "message"}`).
+    field `text` (urlencoded or multipart), or plain text. It answers with a sentence for the
+    shortcut's notification (`?json=1`: `{"ok", "message"}`).
+  * `POST /c/<key>` with a picture (`image/*`, unlabelled picture bytes, or a picture file in
+    a multipart form; JPEG, PNG, GIF, WebP or BMP, the only formats it opens) saves it as sent in
+    `Pictures\Phone Clipboard\iPhone <date> <time>.<ext>` and puts it on the clipboard as a
+    bitmap (`CF_DIB`, turned the right way up by its EXIF orientation, transparency on
+    white), as `PNG` (only for PNG pictures) and as the saved file (`CF_HDROP` with
+    "Preferred DropEffect" copy). HEIC is refused with a message saying to convert it on
+    the iPhone. Bodies up to 60 MB; the key is checked before the body is read.
   * `GET /p/<key>` is the iPhone's page; `GET /` is the computer's page for the computer
     itself and the iPhone's page (asking for the code) for anyone else.
   * `GET /api/ping` says it's Phone Clipboard (`{"app", "version", "name"}`, open to all
     sites so the iPhone page can test the `.local` name).
-  * `/pc/status`, `/pc/qr.svg`, `POST /pc/new-key` and `POST /pc/stop` answer only this
-    computer: loopback address, a `Host` of localhost/127.0.0.1/::1 (no DNS rebinding), no
+  * `/pc/status`, `/pc/qr.svg`, `/pc/picture/<id>`, `POST /pc/copy/<id>`,
+    `POST /pc/show/<id>`, `POST /pc/open-folder`, `POST /pc/new-key` and `POST /pc/stop`
+    answer only this computer: loopback address, a `Host` of localhost/127.0.0.1/::1 (no DNS rebinding), no
     cross-site `Sec-Fetch-Site`, and for changes an `Origin` of the page itself (or none,
     for scripts like uninstall).
   * Keys are compared in constant time; a wrong key waits 0.3 s and is noted on the
     computer's page. Pages carry a strict Content-Security-Policy (no inline scripts or
     styles) and are never cached.
-* `app/winclip.py` reads and writes the Windows clipboard (`CF_UNICODETEXT`) with ctypes.
-  On other systems it uses a stand-in in memory, for testing.
+* `app/winclip.py` reads and writes the Windows clipboard with ctypes (text as
+  `CF_UNICODETEXT`; pictures as above, several formats in one go) and reads pictures with
+  Pillow's `ImageGrab.grabclipboard()`. On other systems it uses a stand-in in memory, for
+  testing.
+* `app/pictures.py` does the picture work with Pillow: PNG for the iPhone, bitmap for
+  Windows, the right way up, saved under a new name (never overwriting).
+* `app/requirements.txt` pins Pillow (13.0.0, MIT-CMU license; 12.x has known security problems) with the fingerprints of its
+  three Windows files for Python 3.12. setup.bat installs it into `.packages\` with
+  `uv pip install --target ... --require-hashes`; the program adds that folder to its path.
+  Without it, text works and the pages say to run setup.bat.
 * `app/netinfo.py` finds the computer's addresses, and asks PowerShell (once a minute at
   most, with no window) which networks Windows treats as public and whether the firewall
   rule exists, for the warnings on the computer's page.
@@ -242,6 +302,7 @@ it).
 * `app/pages/` has the two pages, their script and style, and the icon.
 * `app/windows-setup.ps1` does the set-up (see the notes at its top): Python 3.12 from uv
   into `.python\` (`--no-bin --no-registry`, so it doesn't touch the rest of the computer),
+  Pillow into `.packages\`,
   shortcuts in the Startup folder and the Start menu (both run `pythonw.exe
   app\phone_clipboard.py`, the Start menu one with `--open`), and, with administrator
   permission, Windows Firewall rules named "Phone Clipboard" for TCP 8799 on private and
@@ -264,8 +325,9 @@ From the folder, with any Python 3.9 or newer:
 python -m unittest discover tests
 ```
 
-They use a stand-in clipboard, so your real clipboard is left alone. To also read the QR
-codes back with a real decoder: `pip install zxing-cpp numpy` first.
+They use a stand-in clipboard, so your real clipboard is left alone. The picture tests need
+Pillow (`pip install pillow==13.0.0`); to also read the QR codes back with a real decoder:
+`pip install zxing-cpp numpy`. Tests whose add-on is missing are skipped.
 
 To try it without Windows: `python app/phone_clipboard.py --port 8799 --data some-folder`
 (the clipboard is then a stand-in in memory).

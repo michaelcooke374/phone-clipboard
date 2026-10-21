@@ -91,27 +91,45 @@ function render() {
       "If that was your iPhone, scan the code above again and put the new address in both shortcuts.";
   }
 
+  $("version").textContent = `Phone Clipboard ${s.version} on ${s.computer}, port ${s.port}.`;
   const list = $("recent");
+  // Rebuilt only when something new arrived (or once a minute, for the times), so pictures don't flicker.
+  const signature = JSON.stringify([s.from_phone.map((e) => e.id), Math.floor(Date.now() / 60000)]);
+  if (list.dataset.signature === signature) return;
+  list.dataset.signature = signature;
   list.replaceChildren();
   if (!s.from_phone.length) list.append(el("li", "muted", "Nothing yet."));
   for (const item of s.from_phone) {
     const li = el("li");
-    const text = el("div", "text", item.text);
-    text.title = ago(item.time);
     const copy = el("button", "secondary", "Copy");
     copy.type = "button";
     copy.addEventListener("click", async () => {
       try {
-        await navigator.clipboard.writeText(item.text.replace(/\n/g, "\r\n"));
+        await post(`/pc/copy/${item.id}`);
         toast("Copied. Paste with Ctrl+V.");
       } catch (e) {
-        toast("Couldn't copy. Select the text and press Ctrl+C.");
+        toast(item.kind === "text" ? "Couldn't copy. Select the text and press Ctrl+C." : "Couldn't copy. Open the pictures folder instead.");
       }
     });
-    li.append(text, copy);
+    if (item.kind === "picture") {
+      const img = el("img", "thumb");
+      img.src = `/pc/picture/${item.id}`;
+      img.alt = item.name;
+      const about = el("div", "text", `${item.name}\n${item.width} x ${item.height}, ${ago(item.time)}`);
+      const show = el("button", "secondary", "Show");
+      show.type = "button";
+      show.title = "Show it in File Explorer";
+      show.addEventListener("click", () => post(`/pc/show/${item.id}`).catch(() => toast("Couldn't open File Explorer.")));
+      const actions = el("div", "actions");
+      actions.append(copy, show);
+      li.append(img, about, actions);
+    } else {
+      const text = el("div", "text", item.text);
+      text.title = ago(item.time);
+      li.append(text, copy);
+    }
     list.append(li);
   }
-  $("version").textContent = `Phone Clipboard ${s.version} on ${s.computer}, port ${s.port}.`;
 }
 
 async function post(path) {
@@ -120,6 +138,7 @@ async function post(path) {
 }
 
 $("host").addEventListener("change", render);
+$("open-folder").addEventListener("click", () => post("/pc/open-folder").catch(() => toast("Couldn't open the folder.")));
 $("check").addEventListener("click", async () => {
   $("state").textContent = "Checking...";
   await load(true);
