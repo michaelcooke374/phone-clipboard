@@ -27,7 +27,11 @@
   <div id="app" hidden>
     <section class="card">
       <h2>From your computer</h2>
-      <textarea id="from-pc" readonly aria-label="Text from your computer" placeholder="Copy some text on your computer, then tap Refresh."></textarea>
+      <textarea id="from-pc" readonly aria-label="Text from your computer" placeholder="Copy some text or a picture on your computer, then tap Refresh."></textarea>
+      <figure class="picture" id="pc-picture" hidden>
+        <img id="pc-img" alt="The picture copied on your computer">
+        <figcaption class="muted">Touch and hold the picture, then tap <b>Copy</b> (or <b>Save to Photos</b>).</figcaption>
+      </figure>
       <div class="row">
         <button id="copy" type="button">Copy to iPhone</button>
         <button class="secondary" id="refresh" type="button">Refresh</button>
@@ -41,12 +45,17 @@
         <button id="send" type="button">Send to computer</button>
         <button class="secondary" id="clear" type="button">Clear</button>
       </div>
+      <div class="row">
+        <button class="secondary" id="send-pictures" type="button">Send pictures...</button>
+      </div>
+      <input type="file" id="picture-input" accept="image/*" multiple hidden>
+      <p class="muted gap">Pictures go onto the computer's clipboard (the last one, if you send several) and into its Pictures folder, in <b>Phone Clipboard</b>.</p>
     </section>
 
     <section class="card" id="setup">
       <h2>One-tap set-up</h2>
-      <p>With two shortcuts, one tap (or a double-tap on the back of your iPhone) moves the text, without opening this page. You do this once. It takes about five minutes.</p>
-      <p><b>The address for both shortcuts:</b></p>
+      <p>With shortcuts, one tap (or a double-tap on the back of your iPhone) moves text and pictures, without opening this page. You do this once. It takes about five minutes for the first two, three more for pictures.</p>
+      <p><b>The address for the shortcuts:</b></p>
       <div class="linkbox">
         <input class="link" id="shortcut-link" readonly aria-label="Address for the shortcuts">
         <button id="copy-link" type="button">Copy</button>
@@ -65,6 +74,7 @@
           <li>Tap the name at the top (with the small arrow), choose <b>Rename</b>, and type <code>Get from PC</code>. Tap <b>Done</b>.</li>
           <li>Try it: copy some text on the computer, then tap <b>Get from PC</b> in Shortcuts. The first time, the iPhone asks to connect to your computer: tap <b>Allow</b> (or <b>Always Allow</b>).</li>
         </ol>
+        <p class="muted">It brings pictures too: copy a picture on the computer (or a picture file in File Explorer), then run <b>Get from PC</b>, and paste the picture on the iPhone.</p>
       </details>
 
       <details>
@@ -80,6 +90,22 @@
           <li>Try it: copy some text on the iPhone, tap <b>Send to PC</b>, then press <kbd>Ctrl</kbd>+<kbd>V</kbd> on the computer. If the iPhone asks about pasting or connecting, choose <b>Allow</b> (or <b>Always Allow</b>).</li>
         </ol>
         <p class="muted">So the iPhone stops asking before every paste: <b>Settings</b>, <b>Apps</b>, <b>Shortcuts</b>, <b>Paste from Other Apps</b>, <b>Allow</b>.</p>
+      </details>
+
+      <details>
+        <summary>Shortcut 3: Send picture to PC</summary>
+        <ol class="steps">
+          <li>In Shortcuts, tap <b>+</b>.</li>
+          <li>Tap the name at the top (with the small arrow), choose <b>Rename</b>, and type <code>Send picture to PC</code>.</li>
+          <li>Tap the name again, choose <b>Details</b>, turn on <b>Show in Share Sheet</b>, and tap <b>Done</b>. A first step appears: <b>Receive Any input from Share Sheet</b>.</li>
+          <li>In that step, tap <b>Any</b>, choose only <b>Images</b>, and tap <b>Done</b>. Then tap <b>Continue</b> (after "If there's no input") and choose <b>Get Clipboard</b>.</li>
+          <li>Search for <code>Convert Image</code> and tap it. If its format isn't <b>JPEG</b>, tap the format and choose <b>JPEG</b>. (iPhone photos are in a format Windows can't paste.)</li>
+          <li>Search for <code>Get Contents of URL</code> and tap it. Tap <b>URL</b> and paste the same address as before.</li>
+          <li>Tap the small arrow at the right of that step. Set <b>Method</b> to <b>POST</b>. Tap <b>Request Body</b> and choose <b>File</b>. Tap <b>File</b> (the blue word) and choose <b>Converted Image</b>.</li>
+          <li>Search for <code>Show Notification</code> and tap it. Tap its text, delete it, and tap <b>Contents of URL</b> in the bar above the keyboard. Tap <b>Done</b>.</li>
+          <li>Try it: in Photos, open a photo, tap <b>Share</b>, and choose <b>Send picture to PC</b> (scroll down the list if needed). Then press <kbd>Ctrl</kbd>+<kbd>V</kbd> on the computer.</li>
+        </ol>
+        <p class="muted">It also sends a picture you copied on the iPhone: copy it, then run <b>Send picture to PC</b>. One picture at a time; to send several at once, use <b>Send pictures...</b> on this page.</p>
       </details>
 
       <details>

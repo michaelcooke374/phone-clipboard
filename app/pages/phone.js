@@ -1,5 +1,6 @@
 "use strict";
-// The iPhone's page: copy the computer's text, send text to the computer, set up the shortcuts.
+// The iPhone's page: copy the computer's text or picture, send text and pictures to the computer,
+// set up the shortcuts.
 // The key comes from the address (/p/<key>), which the QR code on the computer gives.
 
 const $ = (id) => document.getElementById(id);
@@ -62,11 +63,15 @@ function legacyCopy(text) {
   return ok;
 }
 
-async function call(method, text) {
+// GET the computer's clipboard, or POST text (a string) or a picture (a File).
+async function call(method, content) {
   const options = { method, cache: "no-store", headers: {} };
-  if (text !== undefined) {
+  if (typeof content === "string") {
     options.headers["Content-Type"] = "application/json";
-    options.body = JSON.stringify({ text });
+    options.body = JSON.stringify({ text: content });
+  } else if (content) {
+    options.headers["Content-Type"] = content.type || "application/octet-stream";
+    options.body = content;
   }
   const r = await fetch(`/c/${key}?json=1`, options);
   let data = {};
@@ -96,12 +101,24 @@ async function refresh(showToast) {
     $("problem").hidden = true;
     $("app").hidden = false;
     $("state").textContent = "Connected to your computer.";
+    const picture = r.data.kind === "picture";
     pcText = r.data.text || "";
     $("from-pc").value = pcText;
-    if (!r.data.has_text) {
-      $("from-pc").placeholder = "The computer's clipboard has no text. Copy some text there, then tap Refresh.";
+    $("from-pc").hidden = picture;
+    $("copy").hidden = picture;
+    $("pc-picture").hidden = !picture;
+    if (picture) {
+      $("pc-img").src = `/c/${key}?picture=1&t=${Date.now()}`;
+    } else {
+      $("pc-img").removeAttribute("src");
+      if (!r.data.has_text) {
+        $("from-pc").placeholder = r.data.message ||
+          "The computer's clipboard has no text or picture. Copy something there, then tap Refresh.";
+      }
     }
-    if (showToast) toast(r.data.has_text ? "Got the computer's text." : "The computer's clipboard has no text.");
+    if (showToast) {
+      toast(picture ? "Got the computer's picture." : r.data.has_text ? "Got the computer's text." : "Nothing copied on the computer yet.");
+    }
   } catch (e) {
     $("state").textContent = "Can't reach the computer.";
     problem("Can't reach your computer.",
@@ -178,6 +195,33 @@ function start() {
     }
   });
   $("clear").addEventListener("click", () => { $("to-pc").value = ""; });
+  $("send-pictures").addEventListener("click", () => $("picture-input").click());
+  $("picture-input").addEventListener("change", async () => {
+    const files = Array.from($("picture-input").files || []);
+    $("picture-input").value = "";
+    if (!files.length) return;
+    const button = $("send-pictures");
+    button.disabled = true;
+    let sent = 0;
+    let last = "";
+    try {
+      for (const [i, file] of files.entries()) {
+        toast(files.length > 1 ? `Sending picture ${i + 1} of ${files.length}...` : "Sending the picture...");
+        const r = await call("POST", file);
+        if (r.status === 403) return oldKey();
+        last = r.data.message || (r.ok ? "Sent." : "That didn't work. Try again.");
+        if (!r.ok) break;
+        sent++;
+      }
+      toast(files.length > 1 && sent === files.length
+        ? `Sent ${sent} pictures. They're in the computer's Pictures folder, in Phone Clipboard; the last one is ready to paste.`
+        : last);
+    } catch (e) {
+      toast("Can't reach the computer. Is it on, awake, and on the same Wi-Fi?");
+    } finally {
+      button.disabled = false;
+    }
+  });
   $("copy-link").addEventListener("click", () => {
     const input = $("shortcut-link");
     if (copyText(input.value)) {

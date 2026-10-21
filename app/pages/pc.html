@@ -28,7 +28,7 @@
         <ol class="steps">
           <li>Connect your iPhone to the <b>same Wi-Fi</b> as this computer.</li>
           <li>Open the <b>Camera</b> on the iPhone and point it at this code. Tap the link that appears under it.</li>
-          <li>A page called <b>Phone Clipboard</b> opens on the iPhone. Follow <b>One-tap set-up</b> there to make the two shortcuts.</li>
+          <li>A page called <b>Phone Clipboard</b> opens on the iPhone. Follow <b>One-tap set-up</b> there to make the shortcuts.</li>
         </ol>
         <p class="muted" id="address-choice" hidden>
           <label for="host">The code uses this address. If the iPhone can't connect, try another:</label>
@@ -40,16 +40,19 @@
 
   <section class="card">
     <h2>Every day</h2>
-    <p><b>Computer to iPhone:</b> copy text here as usual (<kbd>Ctrl</kbd>+<kbd>C</kbd>). On the iPhone, run <b>Get from PC</b> (or double-tap the back of the iPhone, if you set that up). Then paste on the iPhone.</p>
-    <p><b>iPhone to computer:</b> copy text on the iPhone. Run <b>Send to PC</b> (or triple-tap the back). Then paste here with <kbd>Ctrl</kbd>+<kbd>V</kbd>.</p>
+    <p><b>Computer to iPhone:</b> copy text or a picture here as usual (<kbd>Ctrl</kbd>+<kbd>C</kbd>). On the iPhone, run <b>Get from PC</b> (or double-tap the back of the iPhone, if you set that up). Then paste on the iPhone.</p>
+    <p><b>iPhone to computer:</b> copy text on the iPhone and run <b>Send to PC</b> (or triple-tap the back). For a picture, tap <b>Share</b> in Photos and choose <b>Send picture to PC</b>. Then paste here with <kbd>Ctrl</kbd>+<kbd>V</kbd>.</p>
     <p class="muted" id="last-phone"></p>
     <p class="muted" id="last-refused" hidden></p>
   </section>
 
   <section class="card">
-    <h2>Texts from your iPhone</h2>
-    <p class="muted">The last 10, kept until Phone Clipboard stops. Handy if you copied something else on the computer in between.</p>
+    <h2>From your iPhone</h2>
+    <p class="muted">The last 10 texts and pictures, listed until Phone Clipboard stops. Handy if you copied something else on the computer in between. Pictures are also kept in your Pictures folder, in <b>Phone Clipboard</b>.</p>
     <ul class="recent" id="recent"></ul>
+    <div class="row">
+      <button class="secondary" id="open-folder" type="button">Open the pictures folder</button>
+    </div>
   </section>
 
   <section class="card">

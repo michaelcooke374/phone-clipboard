@@ -1,13 +1,19 @@
-"""Phone Clipboard: copy and paste text between this Windows computer and an iPhone.
+"""Phone Clipboard: copy and paste text and pictures between this Windows computer and an iPhone.
 
 It runs quietly in the background (it starts when you sign in to Windows) and answers on
 your own Wi-Fi at http://<this computer>:8799:
 
-  /            this computer only: the set-up page with the QR code for the iPhone, the
-               texts the iPhone sent, and what to fix if the iPhone can't connect
-  /p/<key>     the iPhone's page: copy the computer's text, or send text to the computer
-  /c/<key>     for the iPhone's Shortcuts: GET gives the computer's clipboard text; POST
-               (JSON {"text": ...}, a form field "text", or plain text) puts text on it
+  /            this computer only: the set-up page with the QR code for the iPhone, what
+               the iPhone sent, and what to fix if the iPhone can't connect
+  /p/<key>     the iPhone's page: copy the computer's text or picture, or send some over
+  /c/<key>     for the iPhone's Shortcuts (and the page):
+                 GET   the computer's clipboard: its text, or else its picture (a copied
+                       picture as PNG, or a copied picture file as it is). ?json=1 says
+                       which ({"kind": "text" | "picture" | "none"}); ?picture=1 gives only a
+                       picture.
+                 POST  text (JSON {"text": ...}, a form field "text", or plain text) or a
+                       picture (image/*, or a picture file in a multipart form) onto the
+                       computer's clipboard. Pictures are also saved in Pictures > Phone Clipboard.
   /api/ping    "is Phone Clipboard here?" (no key needed; says nothing private)
 
 Everything else needs the key: a long random password made on the first start and kept in
@@ -16,7 +22,8 @@ the same Wi-Fi can read or change the clipboard. The set-up page (which shows th
 only answers this computer itself.
 
 Clipboard texts are never written to disk or to the log; the last few texts from the
-iPhone are kept in memory, for the set-up page, until Phone Clipboard stops.
+iPhone are kept in memory, for the set-up page, until Phone Clipboard stops. Pictures from
+the iPhone are saved (Windows can only paste a picture into some programs from a file).
 
     pythonw.exe app\\phone_clipboard.py [--open] [--port N] [--data FOLDER]
 """
@@ -47,21 +54,27 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import netinfo
+import pictures
 import qr
 import winclip
 
 APP = "phone-clipboard"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 ROOT = Path(__file__).resolve().parent.parent
 PAGES = Path(__file__).resolve().parent / "pages"
+sys.path.append(str(ROOT / ".packages"))        # Pillow, for pictures (setup.bat puts it there)
 DEFAULT_PORT = 8799
-MAX_BODY = 2_000_000                    # bytes the iPhone may send at once (a long document)
+MAX_BODY = 60_000_000                   # bytes the iPhone may send at once (a big photo)
 KEY_PATTERN = re.compile(r"[A-Za-z0-9_-]{16,64}")
 STATIC = {"style.css": "text/css; charset=utf-8", "pc.js": "text/javascript; charset=utf-8",
           "phone.js": "text/javascript; charset=utf-8", "icon.png": "image/png", "icon.ico": "image/x-icon"}
 LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
-NO_TEXT = "Your computer's clipboard has no text. Copy some text on the computer first, then try again."
+NOTHING_COPIED = ("Your computer's clipboard has no text or picture. Copy something on the computer first, "
+                  "then try again.")
+NO_PICTURES = ("Pictures need one more step on the computer: double-click setup.bat in the Phone Clipboard "
+               "folder. (Text works already.)")
+TOO_BIG = "That's too big to send (the limit is 60 MB)."
 WRONG_KEY = ("This link or shortcut has an old key, so the computer refused it. On the computer, open "
              "Phone Clipboard (Start menu) and set up the iPhone again with the new code.")
 BUSY = "Another program on the computer is using the clipboard. Try again in a moment."
@@ -157,6 +170,30 @@ def _decode(body: bytes, charset: str | None = None) -> str:
         return body.decode("utf-8", errors="replace")
 
 
+def _parts(body: bytes, content_type: str) -> list:
+    message = BytesParser(policy=policy.HTTP).parsebytes(
+        b"Content-Type: " + content_type.encode("latin-1", "replace") + b"\r\n\r\n" + body)
+    return list(message.iter_parts()) if message.is_multipart() else []
+
+
+def picture_in(body: bytes, content_type: str) -> bytes | None:
+    """The picture in a request body: the body itself (image/..., or unlabelled picture
+    bytes) or a picture file in a multipart form. None when it's text."""
+    ctype = content_type.split(";")[0].strip().lower()
+    if ctype.startswith("image/"):
+        return body
+    # Senders that don't say (or say "form", like curl's default): judged by the first bytes.
+    if ctype in ("", "application/octet-stream", "application/x-www-form-urlencoded") \
+            and pictures.looks_like_picture(body):
+        return body
+    if ctype == "multipart/form-data":
+        for part in _parts(body, content_type):
+            payload = part.get_payload(decode=True) or b""
+            if part.get_content_type().startswith("image/") or (part.get_filename() and pictures.looks_like_picture(payload)):
+                return payload
+    return None
+
+
 def parse_body(body: bytes, content_type: str) -> str | None:
     """The text in a request body: JSON, a form, a multipart form, or plain text."""
     ctype = content_type.split(";")[0].strip().lower()
@@ -165,9 +202,7 @@ def parse_body(body: bytes, content_type: str) -> str | None:
     if m:
         charset = m.group(1)
     if ctype == "multipart/form-data":
-        message = BytesParser(policy=policy.HTTP).parsebytes(
-            b"Content-Type: " + content_type.encode("latin-1", "replace") + b"\r\n\r\n" + body)
-        parts = [p for p in message.iter_parts()] if message.is_multipart() else []
+        parts = _parts(body, content_type)
         named = [p for p in parts if (p.get_param("name", header="content-disposition") or "").lower() == "text"]
         for part in named + parts:
             payload = part.get_payload(decode=True) or b""
@@ -193,11 +228,15 @@ def parse_body(body: bytes, content_type: str) -> str | None:
 class State:
     """What the pages show, shared by all requests."""
 
-    def __init__(self, settings: Settings, clipboard=winclip):
+    def __init__(self, settings: Settings, clipboard=winclip, pictures_dir: Path | None = None):
         self.settings = settings
         self.clipboard = clipboard
+        self.pictures_dir = pictures_dir or pictures.pictures_folder() / "Phone Clipboard"
         self.lock = threading.Lock()
-        self.from_phone: deque[dict] = deque(maxlen=10)
+        self.from_phone: deque[dict] = deque(maxlen=10)     # newest first; pictures keep their "path"
+        self._next_id = 1
+        self._picture: tuple[int, tuple[bytes, str] | None] | None = None
+        self._picture_lock = threading.Lock()
         self.last_phone: dict | None = None
         self.last_refused: dict | None = None
         self.name = netinfo.local_name()
@@ -213,6 +252,33 @@ class State:
                 self._win = netinfo.windows_status()
                 self._win_time = time.monotonic()
             return self._win
+
+    def picture(self) -> tuple[bytes, str] | None:
+        """The computer's copied picture for the iPhone, made once per copy (the page asks
+        twice: what's there, then the picture itself)."""
+        if not pictures.available():
+            raise pictures.PicturesUnavailable()
+        with self._picture_lock:
+            number = self.clipboard.sequence()
+            if self._picture is None or self._picture[0] != number:
+                try:
+                    found = pictures.to_phone(self.clipboard.grab_picture())
+                except (OSError, ValueError, SyntaxError) as exc:     # a damaged picture: as if none
+                    log.warning("Couldn't read the copied picture: %s", exc)
+                    found = None
+                self._picture = (number, found)
+            return self._picture[1]
+
+    def add(self, entry: dict) -> dict:
+        with self.lock:
+            entry.update(id=self._next_id, time=time.time())
+            self._next_id += 1
+            self.from_phone.appendleft(entry)
+        return entry
+
+    def entry(self, entry_id: str) -> dict | None:
+        with self.lock:
+            return next((e for e in self.from_phone if str(e["id"]) == entry_id), None)
 
     def seen(self, ip: str) -> None:
         with self.lock:
@@ -316,11 +382,9 @@ class Handler(BaseHTTPRequestHandler):
                        "application/json", {"Access-Control-Allow-Origin": "*"})
         elif path.startswith("/c/"):
             if self._key_ok(path[3:].rstrip("/")):
-                self._give_text(want_json)
-            elif want_json:
-                self._json(403, {"ok": False, "message": WRONG_KEY})
+                self._give(want_json, picture_only=query.get("picture") == ["1"])
             else:
-                self._text(403, WRONG_KEY)
+                self._fail(403, WRONG_KEY, want_json)
         elif path == "/" or path.startswith("/p/"):
             self._page("pc.html" if path == "/" and self._local() else "phone.html")
         elif path.startswith("/static/") and path[8:] in STATIC:
@@ -330,6 +394,12 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, (PAGES / name).read_bytes(), STATIC[name])
         elif path == "/pc/status" and self._local():
             self._json(200, self._status(fresh=query.get("fresh") == ["1"]))
+        elif path.startswith("/pc/picture/") and self._local():
+            entry = self.state.entry(path[12:])
+            if not entry or entry["kind"] != "picture" or not Path(entry["path"]).is_file():
+                return self._text(404, "Not found.")
+            ext = Path(entry["path"]).suffix.lower()
+            self._send(200, Path(entry["path"]).read_bytes(), pictures.PHONE_TYPES.get(ext, "application/octet-stream"))
         elif path == "/pc/qr.svg" and self._local():
             host = query.get("host", [""])[0]
             self._send(200, qr.svg(self._phone_link(host)).encode("utf-8"), "image/svg+xml")
@@ -340,12 +410,28 @@ class Handler(BaseHTTPRequestHandler):
         path = urllib.parse.urlsplit(self.path).path
         want_json = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query).get("json") == ["1"]
         if path.startswith("/c/"):
+            if not self._key_ok(path[3:].rstrip("/")):
+                return self._fail(403, WRONG_KEY, want_json)
             body = self._body()
             if body is None:
                 return
-            if not self._key_ok(path[3:].rstrip("/")):
-                return self._json(403, {"ok": False, "message": WRONG_KEY}) if want_json else self._text(403, WRONG_KEY)
-            self._take_text(body, want_json)
+            picture = picture_in(body, self.headers.get("Content-Type") or "")
+            if picture is not None:
+                self._take_picture(picture, want_json)
+            else:
+                self._take_text(body, want_json)
+        elif path.startswith("/pc/copy/") and self._local_change():
+            self._copy_again(path[9:])
+        elif path.startswith("/pc/show/") and self._local_change():
+            entry = self.state.entry(path[9:])
+            if not entry or entry["kind"] != "picture":
+                return self._text(404, "Not found.")
+            show_in_folder(Path(entry["path"]))
+            self._json(200, {"ok": True})
+        elif path == "/pc/open-folder" and self._local_change():
+            self.state.pictures_dir.mkdir(parents=True, exist_ok=True)
+            show_in_folder(self.state.pictures_dir, select=False)
+            self._json(200, {"ok": True})
         elif path == "/pc/new-key" and self._local_change():
             self.state.settings.new_key()
             log.info("Made a new key; old iPhone links and shortcuts no longer work")
@@ -373,7 +459,8 @@ class Handler(BaseHTTPRequestHandler):
                     break
                 total += size
                 if total > MAX_BODY:
-                    self._text(413, "That text is too long to send (the limit is about 2 million letters).")
+                    self._discard(size)
+                    self._text(413, TOO_BIG)
                     return None
                 chunks.append(self.rfile.read(size))
                 self.rfile.readline(100)
@@ -383,45 +470,123 @@ class Handler(BaseHTTPRequestHandler):
         except ValueError:
             length = -1
         if length < 0 or length > MAX_BODY:
-            self._text(413, "That text is too long to send (the limit is about 2 million letters).")
+            self._discard(length)
+            self._text(413, TOO_BIG)
             return None
         return self.rfile.read(length) if length else b""
 
-    def _give_text(self, want_json: bool) -> None:
+    def _discard(self, length: int) -> None:
+        """Reads what's being sent without keeping it, so the sender gets the answer (instead
+        of a broken connection). Up to 4 times the limit; beyond that the connection just ends."""
+        left = min(length, 4 * MAX_BODY) if length > 0 else 0
+        while left > 0:
+            chunk = self.rfile.read(min(left, 1_000_000))
+            if not chunk:
+                break
+            left -= len(chunk)
+
+    def _fail(self, status: int, message: str, want_json: bool) -> None:
+        if want_json:
+            self._json(status, {"ok": False, "message": message})
+        else:
+            self._text(status, message)
+
+    def _give(self, want_json: bool, picture_only: bool = False) -> None:
+        """The computer's text, or else its picture."""
         ip = client_ip(self)
+        st = self.state
+        note = NOTHING_COPIED
+        found = None
         try:
-            text = self.state.clipboard.read_text()
+            text = "" if picture_only else for_phone(st.clipboard.read_text() or "")
+            if not text:
+                found = st.picture()
         except winclip.ClipboardBusy:
-            return self._json(503, {"ok": False, "message": BUSY}) if want_json else self._text(503, BUSY)
+            return self._fail(503, BUSY, want_json)
+        except pictures.PicturesUnavailable:
+            note = NOTHING_COPIED + " " + NO_PICTURES
         except OSError as exc:
             log.warning("Couldn't read the clipboard: %s", exc)
-            return self._json(500, {"ok": False, "message": BUSY}) if want_json else self._text(500, BUSY)
-        self.state.seen(ip)
-        text = for_phone(text or "")
-        log.info("Gave %d characters to %s", len(text), ip)
+            return self._fail(500, BUSY, want_json)
+        st.seen(ip)
+        if text:
+            log.info("Gave %d characters to %s", len(text), ip)
+            if want_json:
+                return self._json(200, {"ok": True, "kind": "text", "text": text, "has_text": True})
+            return self._text(200, text)
+        if found:
+            data, mime = found
+            if want_json:                       # (the page asking what's there: the picture follows)
+                return self._json(200, {"ok": True, "kind": "picture", "type": mime, "bytes": len(data),
+                                        "text": "", "has_text": False})
+            log.info("Gave a picture (%d KB) to %s", len(data) // 1024, ip)
+            return self._send(200, data, mime)
         if want_json:
-            self._json(200, {"ok": True, "text": text, "has_text": bool(text.strip())})
-        elif text:
-            self._text(200, text)
-        else:
-            self._text(404, NO_TEXT)
+            return self._json(200, {"ok": True, "kind": "none", "text": "", "has_text": False, "message": note})
+        self._text(404, note)
+
+    def _take_picture(self, data: bytes, want_json: bool) -> None:
+        ip = client_ip(self)
+        st = self.state
+        st.seen(ip)
+        try:
+            pic = pictures.from_phone(data)
+        except pictures.PicturesUnavailable:
+            return self._fail(503, NO_PICTURES, want_json)
+        except pictures.NotAPicture as exc:
+            return self._fail(400, str(exc), want_json)
+        saved = None
+        try:
+            saved = pictures.save(pic, st.pictures_dir)
+        except OSError as exc:
+            log.warning("Couldn't save a picture in %s: %s", st.pictures_dir, exc)
+        where = f"{st.pictures_dir.parent.name} > {st.pictures_dir.name}"
+        try:
+            st.clipboard.write_picture(pic.png, pic.dib, str(saved) if saved else None)
+        except winclip.ClipboardBusy:
+            return self._fail(503, BUSY + (f" The picture is saved in {where}." if saved else ""), want_json)
+        except (OSError, MemoryError) as exc:
+            log.warning("Couldn't put a picture on the clipboard: %s", exc)
+            return self._fail(500, BUSY + (f" The picture is saved in {where}." if saved else ""), want_json)
+        if saved:
+            st.add({"kind": "picture", "path": str(saved), "name": saved.name,
+                    "width": pic.width, "height": pic.height})
+        log.info("Took a picture (%d x %d, %d KB) from %s", pic.width, pic.height, len(data) // 1024, ip)
+        message = f"Picture sent to your computer ({pic.width} x {pic.height}). Paste there with Ctrl+V."
+        if saved:
+            message += f" It's also saved in {where}."
+        self._json(200, {"ok": True, "message": message}) if want_json else self._text(200, message)
+
+    def _copy_again(self, entry_id: str) -> None:
+        """Puts something the iPhone sent earlier back on the computer's clipboard."""
+        entry = self.state.entry(entry_id)
+        if not entry:
+            return self._text(404, "Not found.")
+        try:
+            if entry["kind"] == "text":
+                self.state.clipboard.write_text(for_windows(entry["text"]))
+            else:
+                pic = pictures.from_phone(Path(entry["path"]).read_bytes())
+                self.state.clipboard.write_picture(pic.png, pic.dib, entry["path"])
+        except (pictures.PicturesUnavailable, pictures.NotAPicture, winclip.ClipboardBusy, OSError, MemoryError) as exc:
+            log.warning("Couldn't copy again: %s", exc)
+            return self._json(500, {"ok": False})
+        self._json(200, {"ok": True})
 
     def _take_text(self, body: bytes, want_json: bool) -> None:
         ip = client_ip(self)
         text = parse_body(body, self.headers.get("Content-Type") or "")
         self.state.seen(ip)
         if not text:
-            message = EMPTY if text == "" else NOTHING_SENT
-            return self._json(400, {"ok": False, "message": message}) if want_json else self._text(400, message)
+            return self._fail(400, EMPTY if text == "" else NOTHING_SENT, want_json)
         try:
             self.state.clipboard.write_text(for_windows(text))
         except winclip.ClipboardBusy:
-            return self._json(503, {"ok": False, "message": BUSY}) if want_json else self._text(503, BUSY)
+            return self._fail(503, BUSY, want_json)
         except (OSError, MemoryError) as exc:
             log.warning("Couldn't put text on the clipboard: %s", exc)
-            return self._json(500, {"ok": False, "message": BUSY}) if want_json else self._text(500, BUSY)
-        with self.state.lock:
-            self.state.from_phone.appendleft({"time": time.time(), "text": for_phone(text)})
+            return self._fail(500, BUSY, want_json)
+        self.state.add({"kind": "text", "text": for_phone(text)})
         log.info("Took %d characters from %s", len(text), ip)
         n = len(text)
         message = f"Sent to your computer ({n} character{'' if n == 1 else 's'}). Paste there with Ctrl+V."
@@ -445,12 +610,17 @@ class Handler(BaseHTTPRequestHandler):
         port, key = st.settings.port, st.settings.key
         nets = (win or {}).get("networks", {})
         with st.lock:
-            from_phone = list(st.from_phone)
+            from_phone = [{k: v for k, v in e.items() if k != "path"} for e in st.from_phone]
             last_phone, last_refused = st.last_phone, st.last_refused
+        pictures_ok = pictures.available()
         warnings = []
         if not addresses:
             warnings.append({"title": "This computer isn't connected to a network.",
                              "text": "Connect it to the same Wi-Fi as your iPhone (or plug in its network cable)."})
+        if not pictures_ok:
+            warnings.append({"title": "Pictures need one more step.",
+                             "text": "Double-click setup.bat in the Phone Clipboard folder. It adds the part "
+                                     "that handles pictures. Text works already."})
         if win is not None:
             # Only the network the iPhone uses counts (not, say, a virtual network for other programs).
             net = nets.get(best or "", {})
@@ -475,6 +645,7 @@ class Handler(BaseHTTPRequestHandler):
             "windows_checked": win is not None,
             "warnings": warnings,
             "from_phone": from_phone,
+            "pictures": {"available": pictures_ok, "folder": str(st.pictures_dir)},
             "last_phone": last_phone,
             "last_refused": last_refused,
         }
@@ -507,6 +678,17 @@ def make_server(state: State, port: int) -> Server:
             if getattr(exc, "winerror", None) in (10048, 10013) or exc.errno in (98, 48, 13):
                 raise                           # the port is taken: IPv4 alone wouldn't help
     return Server(("0.0.0.0", port), handler)
+
+
+def show_in_folder(path: Path, select: bool = True) -> None:
+    """Opens File Explorer at a file (selected) or a folder."""
+    if sys.platform != "win32":
+        return
+    import subprocess
+    if select:
+        subprocess.Popen(f'explorer.exe /select,"{path}"')
+    else:
+        os.startfile(path)                      # noqa: S606 (our own folder)
 
 
 # ---- starting --------------------------------------------------------------------------------
@@ -571,7 +753,8 @@ def main(argv: list[str] | None = None) -> int:
                      "folder with Notepad, change the port to 18799, save, and double-click setup.bat.")
         return 1
     state.stop = server.shutdown
-    log.info("Phone Clipboard %s started on port %d (%s)", VERSION, port, ", ".join(netinfo.lan_addresses()))
+    log.info("Phone Clipboard %s started on port %d (%s)%s", VERSION, port, ", ".join(netinfo.lan_addresses()),
+             "" if pictures.available() else "; pictures need setup.bat")
     threading.Thread(target=state.windows, daemon=True).start()     # have the checks ready for the page
     if args.open:
         threading.Timer(0.3, webbrowser.open, (page,)).start()

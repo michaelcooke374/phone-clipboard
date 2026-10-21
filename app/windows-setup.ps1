@@ -3,7 +3,9 @@
 #
 # 1. Checks the folder is a good place (not still inside the zip, not Program Files or OneDrive).
 # 2. Gets Python for Phone Clipboard's own use, into the .python folder here (with uv, the
-#    tool that also sets up Python for Ashera Clips; it's installed with winget if missing).
+#    tool that also sets up Python for Ashera Clips; it's installed with winget if missing),
+#    and Pillow for pictures into the .packages folder (the exact version in
+#    app\requirements.txt, checked against its fingerprints).
 # 3. Makes Phone Clipboard start by itself when you sign in to Windows, and puts it in the
 #    Start menu.
 # 4. With administrator permission (Windows asks once): lets iPhones on your own network reach
@@ -28,6 +30,8 @@ $AppDir = [System.IO.Path]::GetFullPath($AppDir).TrimEnd('\')
 $RuleName = "Phone Clipboard"                   # netinfo.py looks for rules with this name
 $PythonVersion = "3.12"
 $PythonDir = Join-Path $AppDir ".python"
+$PackagesDir = Join-Path $AppDir ".packages"
+$Requirements = Join-Path $AppDir "app\requirements.txt"
 $DataDir = Join-Path $AppDir "data"
 $DoneFile = Join-Path $DataDir "setup-done.txt"
 $Program = Join-Path $AppDir "app\phone_clipboard.py"
@@ -267,6 +271,32 @@ if ($check -ne "ok") {
         "What to do: delete the .python folder inside $AppDir, then double-click start.bat again.")
 }
 Say "Python is ready."
+
+# Pillow, for pictures. Without it text still works, so a problem here doesn't stop the set-up.
+$pillowVersion = ([regex]::Match((Get-Content $Requirements -Raw), 'pillow==([0-9.]+)')).Groups[1].Value
+function Get-PillowVersion {
+    $ErrorActionPreference = "Continue"
+    $v = & $python -c "import sys; sys.path.append(sys.argv[1]); import PIL; print(PIL.__version__)" $PackagesDir 2>$null
+    $ErrorActionPreference = "Stop"
+    return [string]$v
+}
+if ((Get-PillowVersion) -ne $pillowVersion) {
+    if (-not (Has-Uv)) {
+        Say "Pictures need uv, which isn't here. Text works; to add pictures, install uv"
+        Say "(open PowerShell and type: winget install astral-sh.uv), then double-click setup.bat."
+    } else {
+        Say "Getting the part that handles pictures (about 7 MB, one time only)..."
+        $ErrorActionPreference = "Continue"
+        & uv pip install --python $python --target $PackagesDir --no-deps --require-hashes --upgrade -r $Requirements | Out-Host
+        $ErrorActionPreference = "Stop"
+    }
+}
+if ((Get-PillowVersion) -eq $pillowVersion) {
+    Say "Pictures are ready."
+} else {
+    Write-Host "  [NOTE] The part that handles pictures couldn't be installed. Text works; for pictures," -ForegroundColor Yellow
+    Say "check your internet connection and double-click setup.bat again."
+}
 
 # 3. Start with Windows, and the Start menu.
 $shell = New-Object -ComObject WScript.Shell
