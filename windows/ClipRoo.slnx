@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ClipRoo.Core/ClipRoo.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ClipRoo.Core.Tests/ClipRoo.Core.Tests.csproj" />
+  </Folder>
+</Solution>

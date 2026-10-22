@@ -1,0 +1,14 @@
+<Project>
+  <!-- Settings for every ClipRoo project. -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Exact package versions, written to packages.lock.json and checked on every restore. -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <Company>ClipRoo</Company>
+    <Product>ClipRoo</Product>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+</Project>
