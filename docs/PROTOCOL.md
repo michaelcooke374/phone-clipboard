@@ -1,9 +1,9 @@
-# PasteBridge protocol, version 1
+# ClipRoo protocol, version 1
 
 How the iPhone app ("the phone") and the Windows app ("the bridge") talk. Both apps are
 built from this document; when they disagree, this document wins (or gets fixed).
 
-Draft, October 2026. "PasteBridge" is the working name.
+Draft, October 2026.
 
 ---
 
@@ -45,12 +45,12 @@ Draft, October 2026. "PasteBridge" is the working name.
 
 - The bridge announces itself with DNS-SD over multicast DNS (Windows' own
   `DnsServiceRegister`, Windows 10 and later; no Apple Bonjour needed):
-  - service type `_pastebridge._tcp`, domain `local.`
+  - service type `_cliproo._tcp`, domain `local.`
   - instance name: the PC's display name (from the bridge's settings; default: Windows'
     computer name)
   - port: the port in use
   - TXT: `v=1`, `id=<pc_id>`
-- The phone browses for `_pastebridge._tcp` (Network framework `NWBrowser`; Info.plist
+- The phone browses for `_cliproo._tcp` (Network framework `NWBrowser`; Info.plist
   lists the service in `NSBonjourServices` and explains local network use in
   `NSLocalNetworkUsageDescription`) and picks the instance whose `id` matches its paired PC.
 - Order the phone tries: the last address that worked, then what discovery finds, then the
@@ -62,13 +62,13 @@ Draft, October 2026. "PasteBridge" is the working name.
 The bridge shows a QR code (and the same text for copying). The text is a link:
 
 ```
-https://pastebridge.app/pair#v=1&id=<pc_id>&n=<name>&a=<addresses>&f=<fingerprint>&c=<code>
+https://cliproo.app/pair#v=1&id=<pc_id>&n=<name>&a=<addresses>&f=<fingerprint>&c=<code>
 ```
 
 - Everything after `#` stays on the device (browsers don't send it to the website). If the
-  app is installed, the link opens it (Universal Link for `pastebridge.app/pair`); if not,
-  the page explains what PasteBridge is and links to the App Store. The app's own QR
-  scanner accepts the same text, and also `pastebridge://pair?...` with the same fields.
+  app is installed, the link opens it (Universal Link for `cliproo.app/pair`); if not,
+  the page explains what ClipRoo is and links to the App Store. The app's own QR
+  scanner accepts the same text, and also `cliproo://pair?...` with the same fields.
 - `n`: the PC's display name, URL-encoded, at most 64 characters.
 - `a`: comma-separated `host:port` candidates: the PC's private IPv4 addresses (the one on
   a private network first) and `<computer-name>.local`.
@@ -100,7 +100,7 @@ only add fields). Every request but `hello` and `pair` needs the token.
 
 ### `GET /v1/hello` (no token)
 ```
-{"app": "pastebridge", "protocol": [1], "pc_id": "<id>", "name": "<display name>"}
+{"app": "cliproo", "protocol": [1], "pc_id": "<id>", "name": "<display name>"}
 ```
 
 ### Items
@@ -141,21 +141,21 @@ The phone sends something to the PC.
 - A picture or a file: the raw bytes as the body, with
   - `Content-Type`: its type
   - `Content-Length`: required
-  - `X-PB-Kind`: `image` or `file`
-  - `X-PB-Name`: the file name, percent-encoded UTF-8 (`IMG_0042.jpg`)
-  - for several files sent together: `X-PB-Group: <22 chars>` and `X-PB-Group-Count: <n>`
+  - `X-CR-Kind`: `image` or `file`
+  - `X-CR-Name`: the file name, percent-encoded UTF-8 (`IMG_0042.jpg`)
+  - for several files sent together: `X-CR-Group: <22 chars>` and `X-CR-Group-Count: <n>`
 
 `201` with the stored item plus `"message"`: one sentence for the phone to show, like
 "Sent to DESKTOP-7GH2K1L. Paste with Ctrl+V."
 
 What the bridge does:
 - Text: onto the clipboard (line ends `\r\n`).
-- A picture: saved as sent in `Pictures\PasteBridge\`, then onto the clipboard as a bitmap
+- A picture: saved as sent in `Pictures\ClipRoo\`, then onto the clipboard as a bitmap
   (`CF_DIB`, the right way up by its EXIF orientation, transparency on white), as `PNG` for
   PNG pictures, and as the saved file (`CF_HDROP`, "Preferred DropEffect" = copy). HEIC is
   turned into JPEG by the phone before sending; the bridge answers `415 unsupported` to
   HEIC and to anything it can't open (it opens JPEG, PNG, GIF, WebP and BMP only).
-- A file: saved in `Downloads\PasteBridge\` (never overwriting: "name (2).ext"), then onto
+- A file: saved in `Downloads\ClipRoo\` (never overwriting: "name (2).ext"), then onto
   the clipboard as a file. A group goes onto the clipboard together once all its files
   have arrived.
 - A notification: "Picture from Michael's iPhone. Press Ctrl+V to paste."

@@ -1,6 +1,6 @@
 # Plan: from Phone Clipboard to an App Store app
 
-Status: agreed, October 21, 2026 (decisions in section 7). The name is being checked.
+Status: agreed, October 22, 2026 (decisions in section 7).
 
 Goal: a free iPhone app with a $4.99 lifetime upgrade, plus a free Windows companion in the
 Microsoft Store, that moves text, pictures and files between an iPhone and a Windows PC
@@ -180,8 +180,10 @@ built with Xcode 26 or later as the App Store requires):
 
 ## 7. Decisions (October 21, 2026)
 
-1. **Name:** PasteBridge, if it's free. Being checked: App Store, Microsoft Store,
-   trademarks, domains. The final check is reserving the name in App Store Connect.
+1. **Name: ClipRoo** (chosen October 22 after checking 14 names; PasteBridge was already
+   used by a Windows clipboard product). No App Store app, store listing or trademark found
+   by web search. Still to do by Michael: reserve the name in App Store Connect and
+   Microsoft Partner Center, and register `cliproo.app` (the pairing link's domain).
 2. **No ads.**
 3. **Free and Pro** as in section 3: free has text and pictures both ways, one PC, all the
    one-tap actions; Pro ($4.99 once) adds files and folders, several PCs and history kept
