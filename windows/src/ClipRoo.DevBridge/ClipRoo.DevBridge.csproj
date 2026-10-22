@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- A stand-in PC for building the iPhone app on a Mac: the real bridge with a pretend
+       clipboard you type into. Not shipped. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>ClipRoo.DevBridge</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../ClipRoo.Core/ClipRoo.Core.csproj" />
+  </ItemGroup>
+</Project>

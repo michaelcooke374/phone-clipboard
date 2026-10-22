@@ -9,6 +9,7 @@ The Windows half of ClipRoo: the "bridge" that the iPhone app talks to
 | --- | --- |
 | `src/ClipRoo.Core` | Everything that isn't Windows-specific: the HTTPS server and every request in the protocol, pairing codes and links, paired phones, history and outbox, file naming, rate limits. Builds and runs on any system. |
 | `tests/ClipRoo.Core.Tests` | Tests that start the real server (HTTPS, pinned certificate) on a free port and talk to it like the phone does, with stand-ins for the Windows clipboard, pictures and notifications. |
+| `src/ClipRoo.DevBridge` | A stand-in PC for building the iPhone app on a Mac (or anywhere .NET runs): the real server with a pretend clipboard you type into. `dotnet run --project src/ClipRoo.DevBridge` prints the pairing link; type text to "copy" it; what the phone sends is printed. Not shipped. |
 | `src/ClipRoo.Windows` | Next: the Windows app itself (tray icon, clipboard, picture decoding, discovery, notifications, start with Windows) and its MSIX package for the Microsoft Store. |
 
 ## Build and test
